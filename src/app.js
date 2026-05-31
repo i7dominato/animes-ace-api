@@ -11,7 +11,13 @@ const avaliacaoRoutes = require('./routes/avaliacoes');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',                    // desenvolvimento local
+    'https://animes-ace-web.vercel.app',        // produção — troque pela URL real do Vercel
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use('/api/auth',                         authRoutes);
