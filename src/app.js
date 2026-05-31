@@ -1,21 +1,24 @@
 // Ponto de entrada do servidor Express
-const express = require('express');
-const cors    = require('cors');
+const express  = require('express');
+const cors     = require('cors');
 require('dotenv').config();
+
+const authRoutes = require('./routes/auth');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares globais
-app.use(cors());            // Permite requisições do frontend
-app.use(express.json());    // Lê o corpo das requisições em JSON
+app.use(cors());
+app.use(express.json());
 
-// Rota de teste — confirma que o servidor está vivo
+// Todas as rotas de auth ficam em /api/auth
+app.use('/api/auth', authRoutes);
+
+// Rota de teste
 app.get('/', (req, res) => {
   res.json({ message: 'Animes Ace API rodando!' });
 });
 
-// Inicia o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
