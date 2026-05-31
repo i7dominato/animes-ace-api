@@ -1,0 +1,75 @@
+// Define qual banco de dados usar
+datasource db {
+  provider = "postgresql"
+}
+
+// Gera o cliente Prisma automaticamente
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Tabela de usuários
+model User {
+  id         Int          @id @default(autoincrement())
+  nome       String
+  email      String       @unique
+  senha      String
+  avatar     String?
+  criadoEm  DateTime     @default(now())
+  lista      UserLista[]
+  avaliacoes Avaliacao[]
+}
+
+// Tabela de animes
+model Anime {
+  id        Int          @id @default(autoincrement())
+  titulo    String
+  sinopse   String
+  capa      String?
+  generos   String[]
+  nota      Float        @default(0)
+  ano       Int
+  status    String       @default("em_exibicao")
+  episodios Episodio[]
+  lista     UserLista[]
+  avaliacoes Avaliacao[]
+}
+
+// Tabela de episódios
+model Episodio {
+  id        Int    @id @default(autoincrement())
+  animeId   Int
+  numero    Int
+  titulo    String
+  descricao String?
+  urlVideo  String
+  duracao   Int?
+  anime     Anime  @relation(fields: [animeId], references: [id])
+}
+
+// Lista personalizada do usuário
+model UserLista {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  animeId    Int
+  status     String   @default("quero_ver") // assistindo | concluido | quero_ver
+  favoritado Boolean  @default(false)
+  user       User     @relation(fields: [userId], references: [id])
+  anime      Anime    @relation(fields: [animeId], references: [id])
+
+  @@unique([userId, animeId]) // Um usuário não pode ter o mesmo anime duas vezes
+}
+
+// Avaliações
+model Avaliacao {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  animeId     Int
+  nota        Float
+  comentario  String?
+  criadoEm   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  anime       Anime    @relation(fields: [animeId], references: [id])
+
+  @@unique([userId, animeId]) // Um usuário avalia cada anime uma vez
+}
