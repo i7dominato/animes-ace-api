@@ -98,3 +98,4 @@ async function me(req, res) {
     return res.status(500).json({ error: 'Erro interno no servidor.' });
   }
 }
+module.exports = { register, login, me };
