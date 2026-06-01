@@ -2,6 +2,7 @@ const express      = require('express');
 const cors         = require('cors');
 if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 
+const adminRoutes = require('./routes/admin');
 const authRoutes      = require('./routes/auth');
 const animeRoutes     = require('./routes/animes');
 const episodioRoutes  = require('./routes/episodios');
@@ -25,6 +26,7 @@ app.use('/api/animes',                       animeRoutes);
 app.use('/api/animes/:animeId/episodios',    episodioRoutes);
 app.use('/api/animes/:animeId/avaliacoes',   avaliacaoRoutes);
 app.use('/api/users/lista',                  listaRoutes);
+app.use('/api/admin',                        adminRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Animes Ace API rodando!' });

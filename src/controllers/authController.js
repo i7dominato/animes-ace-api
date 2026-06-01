@@ -83,15 +83,18 @@ async function login(req, res) {
 async function me(req, res) {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.userId },
+      where:  { id: req.userId },
       select: { id: true, nome: true, email: true, avatar: true, criadoEm: true },
     });
 
-    return res.json(user);
+    // Informa ao frontend se o usuário logado é admin
+    return res.json({
+      ...user,
+      isAdmin: user.email === process.env.ADMIN_EMAIL,
+    });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Erro interno no servidor.' });
   }
 }
-
-module.exports = { register, login, me };

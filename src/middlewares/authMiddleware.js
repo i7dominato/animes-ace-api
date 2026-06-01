@@ -17,7 +17,7 @@ function authMiddleware(req, res, next) {
 
     // Adiciona o id do usuário na requisição para usar nos controllers
     req.userId = payload.id;
-
+    req.userEmail = payload.email;
     // Passa para o próximo passo (o controller)
     next();
   } catch (err) {
