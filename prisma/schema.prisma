@@ -18,6 +18,7 @@ model User {
   criadoEm  DateTime     @default(now())
   lista      UserLista[]
   avaliacoes Avaliacao[]
+  progresso  Progresso[]
 }
 
 // Tabela de animes
@@ -33,6 +34,7 @@ model Anime {
   episodios Episodio[]
   lista     UserLista[]
   avaliacoes Avaliacao[]
+  progresso  Progresso[]
 }
 
 // Tabela de episódios
@@ -45,6 +47,7 @@ model Episodio {
   urlVideo  String
   duracao   Int?
   anime     Anime  @relation(fields: [animeId], references: [id])
+  progresso  Progresso[]
 }
 
 // Lista personalizada do usuário
@@ -72,4 +75,20 @@ model Avaliacao {
   anime       Anime    @relation(fields: [animeId], references: [id])
 
   @@unique([userId, animeId]) // Um usuário avalia cada anime uma vez
+}
+// Salva o progresso do usuário por episódio
+model Progresso {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  episodioId Int
+  animeId    Int
+  segundos   Int      @default(0)  // Tempo assistido em segundos
+  concluido  Boolean  @default(false)
+  atualizadoEm DateTime @updatedAt
+
+  user     User     @relation(fields: [userId],     references: [id])
+  episodio Episodio @relation(fields: [episodioId], references: [id])
+  anime    Anime    @relation(fields: [animeId],    references: [id])
+
+  @@unique([userId, episodioId]) // Um progresso por usuário por episódio
 }

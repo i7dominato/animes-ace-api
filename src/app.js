@@ -8,6 +8,7 @@ const animeRoutes     = require('./routes/animes');
 const episodioRoutes  = require('./routes/episodios');
 const listaRoutes     = require('./routes/lista');
 const avaliacaoRoutes = require('./routes/avaliacoes');
+const progressoRoutes = require('./routes/progresso');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use('/api/animes/:animeId/episodios',    episodioRoutes);
 app.use('/api/animes/:animeId/avaliacoes',   avaliacaoRoutes);
 app.use('/api/users/lista',                  listaRoutes);
 app.use('/api/admin',                        adminRoutes);
+app.use('/api/progresso', progressoRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Animes Ace API rodando!' });
