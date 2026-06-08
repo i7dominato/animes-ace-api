@@ -37,4 +37,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-echo "" >> src/app.js
+// v1.7.4
