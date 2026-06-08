@@ -44,6 +44,24 @@ app.get('/', (req, res) => {
   res.json({ message: 'Animes Ace API rodando!' });
 });
 
+// Rota temporária de diagnóstico — remover depois
+app.get('/api/debug-db', async (req, res) => {
+  const { PrismaClient } = require('@prisma/client');
+  const { PrismaPg }     = require('@prisma/adapter-pg');
+  const adapter  = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+  const prisma   = new PrismaClient({ adapter });
+  try {
+    const result = await prisma.$queryRaw`
+      SELECT table_name FROM information_schema.tables
+      WHERE table_schema = 'public'
+      ORDER BY table_name;
+    `;
+    return res.json(result);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
