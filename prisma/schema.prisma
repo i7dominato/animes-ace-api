@@ -39,15 +39,17 @@ model Anime {
 
 // Tabela de episódios
 model Episodio {
-  id        Int    @id @default(autoincrement())
-  animeId   Int
-  numero    Int
-  titulo    String
-  descricao String?
-  urlVideo  String
-  duracao   Int?
-  anime     Anime  @relation(fields: [animeId], references: [id])
-  progresso  Progresso[]
+  id          Int    @id @default(autoincrement())
+  animeId     Int
+  numero      Int
+  titulo      String
+  descricao   String?
+  urlVideo    String
+  urlVideoAlt String?           // ← NOVO: URL alternativa (Dailymotion)
+  fontePrincipal String @default("youtube") // ← NOVO: "youtube" ou "dailymotion"
+  duracao     Int?
+  anime       Anime  @relation(fields: [animeId], references: [id])
+  progresso   Progresso[]
 }
 
 // Lista personalizada do usuário

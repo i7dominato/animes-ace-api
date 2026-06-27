@@ -42,8 +42,8 @@ async function buscarUm(req, res) {
 
 // ── ADICIONAR EPISÓDIO ─────────────────────────────────
 async function criar(req, res) {
-  const { animeId }                          = req.params;
-  const { numero, titulo, descricao, urlVideo, duracao } = req.body;
+  const { animeId } = req.params;
+  const { numero, titulo, descricao, urlVideo, urlVideoAlt, fontePrincipal, duracao } = req.body;
 
   if (!numero || !titulo || !urlVideo) {
     return res.status(400).json({ error: 'numero, titulo e urlVideo são obrigatórios.' });
@@ -55,8 +55,10 @@ async function criar(req, res) {
         animeId:  Number(animeId),
         numero:   Number(numero),
         titulo,
-        descricao: descricao ?? null,
+        descricao:     descricao     ?? null,
         urlVideo,
+        urlVideoAlt:   urlVideoAlt   ?? null,
+        fontePrincipal: fontePrincipal ?? 'youtube',
         duracao:  duracao ? Number(duracao) : null,
       },
     });
@@ -86,4 +88,34 @@ async function deletar(req, res) {
   }
 }
 
-module.exports = { listar, buscarUm, criar, deletar };
+// ── ATUALIZAR EPISÓDIO ─────────────────────────────────
+async function atualizar(req, res) {
+  const { id } = req.params;
+  const { numero, titulo, descricao, urlVideo, urlVideoAlt, fontePrincipal, duracao } = req.body;
+
+  try {
+    const episodio = await prisma.episodio.update({
+      where: { id: Number(id) },
+      data: {
+        ...(numero         !== undefined && { numero: Number(numero) }),
+        ...(titulo         !== undefined && { titulo }),
+        ...(descricao      !== undefined && { descricao }),
+        ...(urlVideo       !== undefined && { urlVideo }),
+        ...(urlVideoAlt    !== undefined && { urlVideoAlt }),
+        ...(fontePrincipal !== undefined && { fontePrincipal }),
+        ...(duracao        !== undefined && { duracao: duracao ? Number(duracao) : null }),
+      },
+    });
+
+    return res.json(episodio);
+
+  } catch (err) {
+    if (err.code === 'P2025') {
+      return res.status(404).json({ error: 'Episódio não encontrado.' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Erro interno no servidor.' });
+  }
+}
+
+module.exports = { listar, buscarUm, criar, deletar, atualizar };
