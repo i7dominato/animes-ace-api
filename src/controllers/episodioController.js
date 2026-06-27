@@ -74,11 +74,11 @@ async function criar(req, res) {
 // ── DELETAR EPISÓDIO ───────────────────────────────────
 async function deletar(req, res) {
   const { id } = req.params;
-
   try {
+    // Remove os progressos vinculados antes de deletar o episódio
+    await prisma.progresso.deleteMany({ where: { episodioId: Number(id) } });
     await prisma.episodio.delete({ where: { id: Number(id) } });
     return res.json({ message: 'Episódio removido com sucesso.' });
-
   } catch (err) {
     if (err.code === 'P2025') {
       return res.status(404).json({ error: 'Episódio não encontrado.' });
