@@ -19,6 +19,7 @@ model User {
   lista      UserLista[]
   avaliacoes Avaliacao[]
   progresso  Progresso[]
+  comentarios Comentario[]
 }
 
 // Tabela de animes
@@ -50,6 +51,7 @@ model Episodio {
   duracao     Int?
   anime       Anime  @relation(fields: [animeId], references: [id])
   progresso   Progresso[]
+  comentarios Comentario[]
 }
 
 // Lista personalizada do usuário
@@ -93,4 +95,18 @@ model Progresso {
   anime    Anime    @relation(fields: [animeId],    references: [id])
 
   @@unique([userId, episodioId]) // Um progresso por usuário por episódio
+}
+
+model Comentario {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  episodioId  Int
+  respostaDeId Int?     // se não for null, é uma resposta a outro comentário
+  texto       String
+  criadoEm    DateTime  @default(now())
+
+  user        User       @relation(fields: [userId], references: [id])
+  episodio    Episodio   @relation(fields: [episodioId], references: [id])
+  respostaDe  Comentario? @relation("Respostas", fields: [respostaDeId], references: [id])
+  respostas   Comentario[] @relation("Respostas")
 }

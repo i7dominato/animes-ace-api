@@ -19,6 +19,7 @@ const listaRoutes     = require('./routes/lista');
 const avaliacaoRoutes = require('./routes/avaliacoes');
 const adminRoutes     = require('./routes/admin');
 const progressoRoutes = require('./routes/progresso');
+const comentarioRoutes = require('./routes/comentarios');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,7 @@ app.use(express.json());
 app.use('/api/auth',                         authRoutes);
 app.use('/api/animes',                       animeRoutes);
 app.use('/api/animes/:animeId/episodios',    episodioRoutes);
+app.use('/api/episodios/:episodioId/comentarios', comentarioRoutes);
 app.use('/api/animes/:animeId/avaliacoes',   avaliacaoRoutes);
 app.use('/api/users/lista',                  listaRoutes);
 app.use('/api/admin',                        adminRoutes);
