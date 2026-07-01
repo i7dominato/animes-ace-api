@@ -78,7 +78,6 @@ model Avaliacao {
   user        User     @relation(fields: [userId], references: [id])
   anime       Anime    @relation(fields: [animeId], references: [id])
 
-  @@unique([userId, animeId]) // Um usuário avalia cada anime uma vez
 }
 // Salva o progresso do usuário por episódio
 model Progresso {

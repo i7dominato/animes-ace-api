@@ -29,13 +29,9 @@ async function avaliar(req, res) {
   }
 
   try {
-    // upsert = atualiza se já avaliou, cria se for a primeira vez
-    const avaliacao = await prisma.avaliacao.upsert({
-      where: {
-        userId_animeId: { userId: req.userId, animeId: Number(animeId) },
-      },
-      update: { nota: Number(nota), comentario: comentario ?? null },
-      create: {
+    // Cria uma nova avaliação sempre — sem checar se já existe
+    const avaliacao = await prisma.avaliacao.create({
+      data: {
         userId:     req.userId,
         animeId:    Number(animeId),
         nota:       Number(nota),
@@ -45,11 +41,10 @@ async function avaliar(req, res) {
 
     // Recalcula a nota média do anime com base em todas as avaliações
     const media = await prisma.avaliacao.aggregate({
-      where:   { animeId: Number(animeId) },
-      _avg:    { nota: true },
+      where: { animeId: Number(animeId) },
+      _avg:  { nota: true },
     });
 
-    // Atualiza a nota do anime
     await prisma.anime.update({
       where: { id: Number(animeId) },
       data:  { nota: media._avg.nota ?? 0 },
