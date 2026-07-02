@@ -3,18 +3,17 @@ const prisma = require('../prisma');
 // ── LISTAR TODOS ───────────────────────────────────────
 // Suporta filtros por gênero, ano e busca por título
 async function listar(req, res) {
-  const { busca, genero, ano, pagina = 1 } = req.query;
+  const { busca, genero, ano, notaMin, pagina = 1 } = req.query;
   const porPagina = 12;
 
   try {
-    // Monta os filtros dinamicamente conforme os query params enviados
     const where = {
-      ...(busca  && { titulo:  { contains: busca,        mode: 'insensitive' } }),
-      ...(genero && { generos: { has: genero } }),
-      ...(ano    && { ano:     { equals: Number(ano) } }),
+      ...(busca   && { titulo:  { contains: busca,        mode: 'insensitive' } }),
+      ...(genero  && { generos: { has: genero } }),
+      ...(ano     && { ano:     { equals: Number(ano) } }),
+      ...(notaMin && { nota:    { gte: Number(notaMin) } }),
     };
 
-    // Busca os animes e conta o total ao mesmo tempo
     const [animes, total] = await Promise.all([
       prisma.anime.findMany({
         where,
