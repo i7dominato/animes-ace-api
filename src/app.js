@@ -18,6 +18,7 @@ const episodioRoutes  = require('./routes/episodios');
 const listaRoutes     = require('./routes/lista');
 const avaliacaoRoutes = require('./routes/avaliacoes');
 const adminRoutes     = require('./routes/admin');
+const perfilRoutes = require('./routes/perfil');
 const progressoRoutes = require('./routes/progresso');
 const comentarioRoutes = require('./routes/comentarios');
 
@@ -40,6 +41,7 @@ app.use('/api/episodios/:episodioId/comentarios', comentarioRoutes);
 app.use('/api/animes/:animeId/avaliacoes',   avaliacaoRoutes);
 app.use('/api/users/lista',                  listaRoutes);
 app.use('/api/admin',                        adminRoutes);
+app.use('/api/users', perfilRoutes);
 app.use('/api/progresso',                    progressoRoutes);
 
 app.get('/', (req, res) => {
