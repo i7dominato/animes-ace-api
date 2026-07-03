@@ -1,16 +1,6 @@
 const express      = require('express');
 const cors         = require('cors');
-const { execSync } = require('child_process');
 if (process.env.NODE_ENV !== 'production') require('dotenv').config();
-
-// Roda migrations automaticamente ao iniciar o servidor
-try {
-  console.log('Rodando migrations...');
-  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-  console.log('Migrations concluídas!');
-} catch (err) {
-  console.error('Erro nas migrations:', err.message);
-}
 
 const authRoutes      = require('./routes/auth');
 const animeRoutes     = require('./routes/animes');
