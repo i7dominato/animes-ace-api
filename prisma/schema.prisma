@@ -20,6 +20,7 @@ model User {
   avaliacoes Avaliacao[]
   progresso  Progresso[]
   comentarios Comentario[]
+  likesComentarios LikeComentario[]
 }
 
 // Tabela de animes
@@ -108,4 +109,17 @@ model Comentario {
   episodio    Episodio   @relation(fields: [episodioId], references: [id])
   respostaDe  Comentario? @relation("Respostas", fields: [respostaDeId], references: [id])
   respostas   Comentario[] @relation("Respostas")
+  likes LikeComentario[]
+}
+
+model LikeComentario {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  comentarioId Int
+  criadoEm     DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  comentario Comentario @relation(fields: [comentarioId], references: [id])
+
+  @@unique([userId, comentarioId])
 }

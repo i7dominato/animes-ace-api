@@ -4,21 +4,40 @@ const prisma = require('../prisma');
 // Retorna só os comentários principais, com as respostas aninhadas
 async function listar(req, res) {
   const { episodioId } = req.params;
+  const userId = req.userId; // pode ser undefined se não estiver logado (rota pública)
 
   try {
     const comentarios = await prisma.comentario.findMany({
       where: { episodioId: Number(episodioId), respostaDeId: null },
       include: {
         user: { select: { id: true, nome: true, avatar: true } },
+        _count: { select: { likes: true } },
+        likes: userId ? { where: { userId } } : false,
         respostas: {
-          include: { user: { select: { id: true, nome: true, avatar: true } } },
+          include: {
+            user: { select: { id: true, nome: true, avatar: true } },
+            _count: { select: { likes: true } },
+            likes: userId ? { where: { userId } } : false,
+          },
           orderBy: { criadoEm: 'asc' },
         },
       },
       orderBy: { criadoEm: 'desc' },
     });
 
-    return res.json(comentarios);
+    // Formata a resposta pra já vir com curtidoPorMim pronto
+    function formatar(c) {
+      return {
+        ...c,
+        totalLikes:    c._count.likes,
+        curtidoPorMim: userId ? c.likes.length > 0 : false,
+        likes:         undefined,
+        _count:        undefined,
+        respostas:     c.respostas ? c.respostas.map(formatar) : undefined,
+      };
+    }
+
+    return res.json(comentarios.map(formatar));
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Erro interno no servidor.' });
@@ -89,4 +108,32 @@ async function deletar(req, res) {
   }
 }
 
-module.exports = { listar, criar, deletar };
+// ── TOGGLE DE LIKE ──────────────────────────────────────
+async function toggleLike(req, res) {
+  const { comentarioId } = req.params;
+
+  try {
+    const likeExistente = await prisma.likeComentario.findUnique({
+      where: { userId_comentarioId: { userId: req.userId, comentarioId: Number(comentarioId) } },
+    });
+
+    if (likeExistente) {
+      // Já curtiu — remove o like
+      await prisma.likeComentario.delete({ where: { id: likeExistente.id } });
+      const total = await prisma.likeComentario.count({ where: { comentarioId: Number(comentarioId) } });
+      return res.json({ curtido: false, totalLikes: total });
+    } else {
+      // Ainda não curtiu — adiciona o like
+      await prisma.likeComentario.create({
+        data: { userId: req.userId, comentarioId: Number(comentarioId) },
+      });
+      const total = await prisma.likeComentario.count({ where: { comentarioId: Number(comentarioId) } });
+      return res.json({ curtido: true, totalLikes: total });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erro interno no servidor.' });
+  }
+}
+
+module.exports = { listar, criar, deletar, toggleLike }
