@@ -3,7 +3,7 @@ const prisma = require('../prisma');
 // ── LISTAR TODOS ───────────────────────────────────────
 // Suporta filtros por gênero, ano e busca por título
 async function listar(req, res) {
-  const { busca, genero, ano, notaMin, pagina = 1 } = req.query;
+  const { busca, genero, ano, notaMin, ordenar, pagina = 1 } = req.query;
   const porPagina = 12;
 
   try {
@@ -14,12 +14,21 @@ async function listar(req, res) {
       ...(notaMin && { nota:    { gte: Number(notaMin) } }),
     };
 
+    // Define a ordenação com base no parâmetro recebido
+    const ordenacoes = {
+      nota:      { nota: 'desc' },
+      recentes:  { id: 'desc' },       // mais recém-cadastrados primeiro
+      alfabetico:{ titulo: 'asc' },
+      ano:       { ano: 'desc' },
+    };
+    const orderBy = ordenacoes[ordenar] ?? ordenacoes.nota;
+
     const [animes, total] = await Promise.all([
       prisma.anime.findMany({
         where,
         skip:    (pagina - 1) * porPagina,
         take:    porPagina,
-        orderBy: { nota: 'desc' },
+        orderBy,
         select: {
           id: true, titulo: true, capa: true,
           generos: true, nota: true, ano: true, status: true,
