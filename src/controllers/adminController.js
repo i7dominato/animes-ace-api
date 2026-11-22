@@ -89,4 +89,87 @@ async function deletarAnime(req, res) {
   }
 }
 
-module.exports = { dashboard, listarUsers, deletarUser, deletarAnime };
+// ── VERIFICAR LINKS DO STREAMTAPE ──────────────────────
+// Confere na API do Streamtape se cada vídeo cadastrado ainda existe.
+// Login/key são opcionais para este endpoint; se definir STREAMTAPE_LOGIN e STREAMTAPE_KEY no Render, são enviados.
+function extrairIdStreamtape(url) {
+  if (!url) return null;
+  const m = url.trim().match(/(?:tape|stape)[^/]*\/[ve]\/([A-Za-z0-9_-]+)/i);
+  return m ? m[1] : null;
+}
+
+async function verificarLinks(req, res) {
+  try {
+    const episodios = await prisma.episodio.findMany({
+      orderBy: [{ animeId: 'asc' }, { numero: 'asc' }],
+      select: {
+        id: true, numero: true, titulo: true, animeId: true, urlVideo: true, urlVideoAlt: true,
+        anime: { select: { titulo: true } },
+      },
+    });
+
+    // Monta a lista de (episódio, campo, id do arquivo)
+    const itens = [];
+    let naoVerificaveis = 0;
+    for (const ep of episodios) {
+      for (const campo of ['urlVideo', 'urlVideoAlt']) {
+        const url = ep[campo];
+        if (!url) continue;
+        const fileId = extrairIdStreamtape(url);
+        if (fileId) itens.push({ ep, campo, fileId });
+        else naoVerificaveis++; // YouTube, Dailymotion ou link inválido
+      }
+    }
+
+    // Consulta o Streamtape em lotes de até 100 IDs
+    const status = {};
+    const ids = [...new Set(itens.map(i => i.fileId))];
+    const auth = (process.env.STREAMTAPE_LOGIN && process.env.STREAMTAPE_KEY)
+      ? `&login=${encodeURIComponent(process.env.STREAMTAPE_LOGIN)}&key=${encodeURIComponent(process.env.STREAMTAPE_KEY)}`
+      : '';
+
+    for (let i = 0; i < ids.length; i += 100) {
+      const lote = ids.slice(i, i + 100);
+      const resp = await fetch(
+        `https://api.streamtape.com/file/info?file=${lote.join(',')}${auth}`,
+        { signal: AbortSignal.timeout(20000) }
+      );
+      const json = await resp.json();
+      if (json.status !== 200) {
+        return res.status(502).json({ error: `Streamtape respondeu ${json.status}: ${json.msg ?? 'erro'}` });
+      }
+      for (const id of lote) status[id] = json.result?.[id] ?? null;
+    }
+
+    // Separa os problemas
+    const problemas = [];
+    for (const { ep, campo, fileId } of itens) {
+      const info = status[fileId];
+      let motivo = null;
+      if (!info || info.status === 404) motivo = 'Arquivo não encontrado (apagado ou link errado)';
+      else if (info.status === 451) motivo = 'Indisponível por motivos legais';
+      else if (info.status !== 200) motivo = `Status ${info.status}`;
+      else if (info.converted === false) motivo = 'Vídeo ainda em conversão';
+
+      if (motivo) {
+        problemas.push({
+          episodioId: ep.id, animeId: ep.animeId, anime: ep.anime.titulo,
+          numero: ep.numero, titulo: ep.titulo,
+          campo: campo === 'urlVideo' ? 'Principal' : 'Backup', motivo,
+        });
+      }
+    }
+
+    return res.json({
+      totalEpisodios:  episodios.length,
+      verificados:     itens.length,
+      naoVerificaveis,
+      problemas,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erro ao verificar links.' });
+  }
+}
+
+module.exports = { dashboard, listarUsers, deletarUser, deletarAnime, verificarLinks };
