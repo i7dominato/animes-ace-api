@@ -50,7 +50,7 @@ model Episodio {
   urlVideoAlt String?           // ← NOVO: URL alternativa (Dailymotion)
   fontePrincipal String @default("youtube") // ← NOVO: "youtube" ou "dailymotion"
   duracao     Int?
-  anime       Anime  @relation(fields: [animeId], references: [id])
+  anime       Anime  @relation(fields: [animeId], references: [id], onDelete: Cascade)
   progresso   Progresso[]
   comentarios Comentario[]
 }
@@ -62,8 +62,8 @@ model UserLista {
   animeId    Int
   status     String   @default("quero_ver") // assistindo | concluido | quero_ver
   favoritado Boolean  @default(false)
-  user       User     @relation(fields: [userId], references: [id])
-  anime      Anime    @relation(fields: [animeId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime      Anime    @relation(fields: [animeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, animeId]) // Um usuário não pode ter o mesmo anime duas vezes
 }
@@ -76,8 +76,8 @@ model Avaliacao {
   nota        Float
   comentario  String?
   criadoEm   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
-  anime       Anime    @relation(fields: [animeId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime       Anime    @relation(fields: [animeId], references: [id], onDelete: Cascade)
 
 }
 // Salva o progresso do usuário por episódio
@@ -90,9 +90,9 @@ model Progresso {
   concluido  Boolean  @default(false)
   atualizadoEm DateTime @updatedAt
 
-  user     User     @relation(fields: [userId],     references: [id])
-  episodio Episodio @relation(fields: [episodioId], references: [id])
-  anime    Anime    @relation(fields: [animeId],    references: [id])
+  user     User     @relation(fields: [userId],     references: [id], onDelete: Cascade)
+  episodio Episodio @relation(fields: [episodioId], references: [id], onDelete: Cascade)
+  anime    Anime    @relation(fields: [animeId],    references: [id], onDelete: Cascade)
 
   @@unique([userId, episodioId]) // Um progresso por usuário por episódio
 }
@@ -105,9 +105,9 @@ model Comentario {
   texto       String
   criadoEm    DateTime  @default(now())
 
-  user        User       @relation(fields: [userId], references: [id])
-  episodio    Episodio   @relation(fields: [episodioId], references: [id])
-  respostaDe  Comentario? @relation("Respostas", fields: [respostaDeId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  episodio    Episodio   @relation(fields: [episodioId], references: [id], onDelete: Cascade)
+  respostaDe  Comentario? @relation("Respostas", fields: [respostaDeId], references: [id], onDelete: Cascade)
   respostas   Comentario[] @relation("Respostas")
   likes LikeComentario[]
 }
@@ -118,8 +118,8 @@ model LikeComentario {
   comentarioId Int
   criadoEm     DateTime @default(now())
 
-  user       User       @relation(fields: [userId], references: [id])
-  comentario Comentario @relation(fields: [comentarioId], references: [id])
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comentario Comentario @relation(fields: [comentarioId], references: [id], onDelete: Cascade)
 
   @@unique([userId, comentarioId])
 }

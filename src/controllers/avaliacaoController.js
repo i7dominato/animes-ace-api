@@ -24,8 +24,11 @@ async function avaliar(req, res) {
   const { animeId }        = req.params;
   const { nota, comentario } = req.body;
 
-  if (!nota || nota < 1 || nota > 10) {
+  if (!nota || isNaN(Number(nota)) || Number(nota) < 1 || Number(nota) > 10) {
     return res.status(400).json({ error: 'nota deve ser um número entre 1 e 10.' });
+  }
+  if (comentario != null && (typeof comentario !== 'string' || comentario.trim().length > 1000)) {
+    return res.status(400).json({ error: 'O comentário da avaliação deve ter no máximo 1000 caracteres.' });
   }
 
   try {
@@ -35,7 +38,7 @@ async function avaliar(req, res) {
         userId:     req.userId,
         animeId:    Number(animeId),
         nota:       Number(nota),
-        comentario: comentario ?? null,
+        comentario: comentario?.trim() || null,
       },
     });
 

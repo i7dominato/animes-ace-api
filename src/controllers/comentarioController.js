@@ -52,6 +52,9 @@ async function criar(req, res) {
   if (!texto || !texto.trim()) {
     return res.status(400).json({ error: 'O comentário não pode estar vazio.' });
   }
+  if (typeof texto !== 'string' || texto.trim().length > 1000) {
+    return res.status(400).json({ error: 'O comentário deve ter no máximo 1000 caracteres.' });
+  }
 
   try {
     // Se for resposta, confirma que o comentário pai existe e pertence ao mesmo episódio
