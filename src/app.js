@@ -16,10 +16,13 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://animes-ace-web.vercel.app',
-  ],
+ origin: [
+  'http://localhost:5173',
+  'https://animes-ace-web.vercel.app',
+  'https://localhost',
+  'http://localhost',
+  'capacitor://localhost',
+],
   credentials: true,
 }));
 app.use(express.json());
